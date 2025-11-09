@@ -6,20 +6,17 @@ class RegisterProvider with ChangeNotifier {
 
   RegisterProvider({required this.registerUsecase});
 
-  // Campos
+
   String _name = "";
   String _email = "";
   String _password = "";
-
-  // Errores
   String? _nameError;
   String? _emailError;
   String? _passwordError;
 
-  // Loading
   bool _loading = false;
+  bool _success = false;
 
-  // Getters
   String get name => _name;
   String get email => _email;
   String get password => _password;
@@ -28,9 +25,10 @@ class RegisterProvider with ChangeNotifier {
   String? get emailError => _emailError;
   String? get passwordError => _passwordError;
 
-  bool get isLoading => _loading;
 
-  // setters
+  bool get isLoading => _loading;
+  bool get success => _success;
+
   void setName(String value) {
     _name = value;
     _nameError = null;
@@ -49,7 +47,6 @@ class RegisterProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Registrar
   Future<void> submit() async {
     if (_name.isEmpty) _nameError = "El nombre es requerido";
     if (_email.isEmpty) _emailError = "El correo es requerido";
@@ -62,14 +59,20 @@ class RegisterProvider with ChangeNotifier {
 
     _loading = true;
     notifyListeners();
+    debugPrint("Intentando registrar...");
+
 
     try {
       await registerUsecase(_name, _email, _password);
+
+      _success = true;
+      debugPrint("Registro exitoso");
     } catch (e) {
       _emailError = e.toString();
     } finally {
       _loading = false;
       notifyListeners();
+      debugPrint("wazaaaaaa");
     }
   }
 }

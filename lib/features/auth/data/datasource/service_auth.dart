@@ -35,7 +35,7 @@ class ServiceAuthImpl implements ServiceAuth {
   @override
   Future<UserModel> register(String name, String email, String password) async {
     final response = await client.post(
-      Uri.parse("$baseUrl/create"),
+      Uri.parse("$baseUrl/register"),
       headers: {"Content-Type": "application/jason"},
       body: json.encode({
         "name": name,

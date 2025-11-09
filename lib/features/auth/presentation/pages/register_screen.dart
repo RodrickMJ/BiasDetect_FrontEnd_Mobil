@@ -11,60 +11,80 @@ class RegisterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<RegisterProvider>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Consumer<RegisterProvider>(
+      
+      builder: (context, auth, child) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (auth.success) {
+            context.go('/login');
+          }
+        });
 
-    return Scaffold(
-      backgroundColor: isDark
-          ? const Color(0xFF0F1A3C)
-          : const Color(0xFF2563EB),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 120),
+        final isDark = Theme.of(context).brightness == Brightness.dark;
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            
-            child: TitleWelcome(title: "Hey!", subtitle: "Bienvenido de nuevo"),
-          ),
+        return Scaffold(
+          backgroundColor: isDark
+              ? const Color(0xFF0F1A3C)
+              : const Color(0xFF2563EB),
 
-          const SizedBox(height: 80),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 80),
 
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(40),
-
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0F1A3C) : Colors.white,
-
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(32),
-                  topRight: Radius.circular(32),
-                ),
-
-                border: Border.all(
-                  color: isDark ? Colors.white : Colors.black,
-                  width: 2,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TitleWelcome(
+                  title: "Bienvenido",
+                  subtitle: "Ingrese sus datos para el registro",
                 ),
               ),
 
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AuthNav(isLogin: true, onLogin: () => context.go('/login'), onRegister: () {}),
+              const SizedBox(height: 40),
 
-                  const SizedBox(height: 40),
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 32,
+                  ),
 
-                  FormRegister(auth: auth),
-                ],
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF0F1A3C) : Colors.white,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(32),
+                      topRight: Radius.circular(32),
+                    ),
+                    border: Border.all(
+                      color: isDark ? Colors.white : Colors.black,
+                      width: 2,
+                    ),
+                  ),
+
+                  child: Column(
+                    children: [
+                      AuthNav(
+                        isLogin: false,
+                        onLogin: () => context.go('/login'),
+                        onRegister: () {},
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: FormRegister(auth: auth),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
-
 }
