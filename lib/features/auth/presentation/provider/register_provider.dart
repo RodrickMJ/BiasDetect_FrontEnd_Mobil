@@ -6,13 +6,15 @@ class RegisterProvider with ChangeNotifier {
 
   RegisterProvider({required this.registerUsecase});
 
-
   String _name = "";
   String _email = "";
   String _password = "";
+
   String? _nameError;
   String? _emailError;
   String? _passwordError;
+
+  String? _registerError;
 
   bool _loading = false;
   bool _success = false;
@@ -25,6 +27,7 @@ class RegisterProvider with ChangeNotifier {
   String? get emailError => _emailError;
   String? get passwordError => _passwordError;
 
+  String? get registerError => _registerError;
 
   bool get isLoading => _loading;
   bool get success => _success;
@@ -48,9 +51,16 @@ class RegisterProvider with ChangeNotifier {
   }
 
   Future<void> submit() async {
+    _nameError = null;
+    _emailError = null;
+    _passwordError = null;
+    _registerError = null;
+
     if (_name.isEmpty) _nameError = "El nombre es requerido";
-    if (_email.isEmpty) _emailError = "El correo es requerido";
-    if (_password.isEmpty) _passwordError = "La contraseña es requerida";
+    if (!_email.contains("@")) _emailError = "Correo inválido";
+    if (_password.length < 6) {
+      _passwordError = "La contraseña debe tener mínimo 6 caracteres";
+    }
 
     if (_nameError != null || _emailError != null || _passwordError != null) {
       notifyListeners();
@@ -59,21 +69,15 @@ class RegisterProvider with ChangeNotifier {
 
     _loading = true;
     notifyListeners();
-    debugPrint("Intentando registrar...");
-
 
     try {
       await registerUsecase(_name, _email, _password);
-
       _success = true;
-      debugPrint("Registro exitoso");
     } catch (e) {
-      _emailError = e.toString();
-    } finally {
-      _loading = false;
-      notifyListeners();
-      debugPrint("wazaaaaaa");
+      _registerError = "Error al registrar usuario";
     }
+
+    _loading = false;
+    notifyListeners();
   }
 }
-

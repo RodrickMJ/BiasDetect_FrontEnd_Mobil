@@ -12,13 +12,31 @@ class RegisterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<RegisterProvider>(
-      
-      builder: (context, auth, child) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (auth.success) {
+      builder: (_, auth, __) {
+        // Error general
+        if (auth.registerError != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(auth.registerError!),
+                backgroundColor: Colors.red,
+              ),
+            );
+          });
+        }
+
+        // Registro exitoso → ir al login
+        if (auth.success) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Registro exitoso. Inicia sesión."),
+                backgroundColor: Colors.green,
+              ),
+            );
             context.go('/login');
-          }
-        });
+          });
+        }
 
         final isDark = Theme.of(context).brightness == Brightness.dark;
 

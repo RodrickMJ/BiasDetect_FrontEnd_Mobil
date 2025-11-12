@@ -13,38 +13,39 @@ class FormRegister extends StatelessWidget {
     return Column(
       children: [
         LabelForm(
-          label: "name",
+          label: "Nombre",
+          value: auth.name,
+          errorText: auth.nameError,
+          onChanged: auth.setName,
+        ),
+
+        const SizedBox(height: 16),
+
+        LabelForm(
+          label: "Correo Electrónico",
           value: auth.email,
           errorText: auth.emailError,
           onChanged: auth.setEmail,
         ),
 
         const SizedBox(height: 16),
-        LabelForm(
-          label: "Correo Electronico",
-          value: auth.email,
-          errorText: auth.emailError,
-          onChanged: auth.setEmail,
-        ),
-
-        const SizedBox(height: 16),
 
         LabelForm(
-          label: "contraseña", 
+          label: "Contraseña",
           value: auth.password,
           errorText: auth.passwordError,
-          isPassword: true, 
+          isPassword: true,
           onChanged: auth.setPassword,
         ),
 
-        const SizedBox(height: 24,),
+        const SizedBox(height: 24),
 
         ButtonPrimary(
           text: "Registrarse",
-          isLoading: auth.isLoading, 
+          isLoading: auth.isLoading,
           onPressed: auth.submit,
           color: Colors.orange,
-        )
+        ),
       ],
     );
   }

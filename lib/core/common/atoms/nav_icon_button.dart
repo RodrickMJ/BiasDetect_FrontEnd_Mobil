@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
-class NavIconButton extends StatelessWidget {
-  final IconData icon;
+class NavButton extends StatelessWidget {
+  final int index;
   final bool isActive;
+  final IconData icon;
+  final IconData activeIcon;
   final VoidCallback onTap;
 
-  const NavIconButton({
-    super.key,
-    required this.icon,
+  const NavButton({
+    required this.index,
     required this.isActive,
+    required this.icon,
+    required this.activeIcon,
     required this.onTap,
   });
 
@@ -16,26 +19,24 @@ class NavIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(40),
+    return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 220),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: isActive
-              ? cs.primary.withOpacity(0.85) // fondo azul
+              ? cs.primary.withOpacity(0.18)
               : Colors.transparent,
-          shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Icon(
-          icon,
-          size: 26,
-          color: isActive
-              ? cs.onPrimary // ícono blanco
-              : Colors.black.withOpacity(0.85),
+          isActive ? activeIcon : icon,
+          size: 28,
+          color: isActive ? cs.primary : cs.onSurfaceVariant,
         ),
       ),
     );
   }
 }
+

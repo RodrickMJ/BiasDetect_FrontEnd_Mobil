@@ -1,63 +1,63 @@
+import 'dart:ui';
+import 'package:bias_detect/core/common/atoms/nav_icon_button.dart';
 import 'package:flutter/material.dart';
-import '../atoms/nav_icon_button.dart';
+import 'package:go_router/go_router.dart';
+import 'package:bias_detect/core/router/app_routes.dart';
 
 class GlobalNavBar extends StatelessWidget {
   final int currentIndex;
-  final Function(int) onTap;
 
-  const GlobalNavBar({
-    super.key,
-    required this.currentIndex,
-    required this.onTap,
-  });
+  const GlobalNavBar({super.key, required this.currentIndex});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 70,
-      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade400,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(32),
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(40),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              height: 60,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? cs.surface.withOpacity(0.12)
+                    : cs.surface.withOpacity(0.85),
+                borderRadius: BorderRadius.circular(40),
+                boxShadow: [
+                  BoxShadow(
+                    color: cs.shadow.withOpacity(0.2),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  NavButton(
+                    index: 0,
+                    isActive: currentIndex == 0,
+                    icon: Icons.home_outlined,
+                    activeIcon: Icons.home,
+                    onTap: () => context.go(AppRoutes.homePath),
+                  ),
+                  NavButton(
+                    index: 1,
+                    isActive: currentIndex == 1,
+                    icon: Icons.chat_bubble_outline,
+                    activeIcon: Icons.chat_bubble,
+                    onTap: () => context.go(AppRoutes.chatPath),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            offset: const Offset(0, -2),
-            blurRadius: 8,
-          )
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          NavIconButton(
-            icon: Icons.home,
-            isActive: currentIndex == 0,
-            onTap: () => onTap(0),
-          ),
-          NavIconButton(
-            icon: Icons.auto_graph,
-            isActive: currentIndex == 1,
-            onTap: () => onTap(1),
-          ),
-          NavIconButton(
-            icon: Icons.chat_bubble,
-            isActive: currentIndex == 2,
-            onTap: () => onTap(2),
-          ),
-          NavIconButton(
-            icon: Icons.article,
-            isActive: currentIndex == 3,
-            onTap: () => onTap(3),
-          ),
-          NavIconButton(
-            icon: Icons.person,
-            isActive: currentIndex == 4,
-            onTap: () => onTap(4),
-          ),
-        ],
       ),
     );
   }

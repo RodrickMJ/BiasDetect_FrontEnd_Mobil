@@ -11,32 +11,53 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<LoginProvider>();
+    return Consumer<LoginProvider>(
+      builder: (_, auth, __) {
+        if (auth.user != null) {
+          // Guardar token e ID
+          // Aquí puedes usar SharedPreferences
+          // Pero por ahora solo navega
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.go('/home');
+          });
+        }
+
+        if (auth.authError != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(auth.authError!),
+                backgroundColor: Colors.red,
+              ),
+            );
+          });
+        }
+
+        return buildUI(context, auth);
+      },
+    );
+  }
+
+  Widget buildUI(BuildContext context, LoginProvider auth) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      resizeToAvoidBottomInset: true, 
       backgroundColor: isDark
           ? const Color(0xFF0F1A3C)
           : const Color(0xFF2563EB),
-
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 120),
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: TitleWelcome(title: "Hey!", subtitle: "Bienvenido de nuevo"),
           ),
-
           const SizedBox(height: 40),
-
           Expanded(
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
-
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF0F1A3C) : Colors.white,
                 borderRadius: const BorderRadius.only(
@@ -48,7 +69,6 @@ class LoginScreen extends StatelessWidget {
                   width: 2,
                 ),
               ),
-
               child: Column(
                 children: [
                   AuthNav(
@@ -56,11 +76,11 @@ class LoginScreen extends StatelessWidget {
                     onLogin: () {},
                     onRegister: () => context.go('/register'),
                   ),
-
                   const SizedBox(height: 60),
-
                   Expanded(
-                    child: SingleChildScrollView(child: FormLogin(auth: auth)),
+                    child: SingleChildScrollView(
+                      child: FormLogin(auth: auth),
+                    ),
                   ),
                 ],
               ),
