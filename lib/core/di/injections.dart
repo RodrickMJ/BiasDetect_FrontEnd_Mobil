@@ -38,6 +38,7 @@ Future<void> configureDependecies() async {
     () => RegisterProvider(registerUsecase: getIt()),
   );
 
+
   // Chatbot
   getIt.registerLazySingleton<ChatService>(
     () => ChatServiceImpl(getIt<http.Client>()),
