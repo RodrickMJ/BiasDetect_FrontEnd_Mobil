@@ -1,4 +1,5 @@
 import 'package:bias_detect/core/common/molecules/global_nav_bar.dart';
+import 'package:bias_detect/core/common/molecules/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bias_detect/core/router/app_routes.dart';
@@ -27,6 +28,13 @@ class _MainLayoutState extends State<MainLayout> {
     if (location == AppRoutes.chatPath && currentIndex != 1) {
       currentIndex = 1;
     }
+    if (location == AppRoutes.historyPath && currentIndex != 2) {
+      currentIndex = 2;
+    }
+    if (location == AppRoutes.performanceUserPath && currentIndex != 3) {
+      currentIndex = 3;
+    }
+
   }
 
   @override
@@ -34,6 +42,7 @@ class _MainLayoutState extends State<MainLayout> {
     return Scaffold(
       extendBody: true,
       body: widget.child,
+      drawer: const CustomDrawer(),
       bottomNavigationBar: GlobalNavBar(currentIndex: currentIndex),
     );
   }

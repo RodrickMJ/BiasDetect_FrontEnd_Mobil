@@ -46,22 +46,40 @@ class _ChatPageState extends State<ChatPage> {
         children: [
           // Header
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border(
                 bottom: BorderSide(color: Colors.grey.shade300),
               ),
             ),
-            child: const Center(
-              child: Text(
-                "Chat Bot",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+            child: Row(
+              children: [
+                // Botón de menú para abrir el Drawer
+                Builder(builder: (context) {
+                  return IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.black87),
+                    onPressed: () {
+                      Scaffold.of(context).openDrawer();
+                    },
+                  );
+                }),
+                // Título centrado
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      "Chat Bot",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                // Espacio a la derecha para mantener el título centrado
+                const SizedBox(width: 48),
+              ],
             ),
           ),
 
@@ -70,41 +88,41 @@ class _ChatPageState extends State<ChatPage> {
             child: chatProv.messages.isEmpty
                 ? _buildEmptyState()
                 : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: chatProv.messages.length + (chatProv.isLoading ? 1 : 0),
-                    itemBuilder: (_, i) {
-                      // Indicador de carga al final
-                      if (i == chatProv.messages.length) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Row(
-                            children: [
-                              const SizedBox(width: 16),
-                              const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                "Analizando...",
-                                style: TextStyle(color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
+              controller: _scrollController,
+              padding: const EdgeInsets.all(16),
+              itemCount: chatProv.messages.length + (chatProv.isLoading ? 1 : 0),
+              itemBuilder: (_, i) {
+                // Indicador de carga al final
+                if (i == chatProv.messages.length) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 16),
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          "Analizando...",
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  );
+                }
 
-                      final msg = chatProv.messages[i];
-                      final isUser = msg.sender == "user";
-                      
-                      return MessageBubble(
-                        message: msg,
-                        isUser: isUser,
-                      );
-                    },
-                  ),
+                final msg = chatProv.messages[i];
+                final isUser = msg.sender == "user";
+
+                return MessageBubble(
+                  message: msg,
+                  isUser: isUser,
+                );
+              },
+            ),
           ),
 
           // Input
@@ -155,7 +173,7 @@ class _ChatPageState extends State<ChatPage> {
                   borderRadius: BorderRadius.circular(30),
                 ),
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
               onChanged: chatProv.updateUrl,
             ),
@@ -169,7 +187,7 @@ class _ChatPageState extends State<ChatPage> {
                 child: CircleAvatar(
                   radius: 18,
                   backgroundColor:
-                      _showUrlField ? Colors.blue : Colors.grey.shade300,
+                  _showUrlField ? Colors.blue : Colors.grey.shade300,
                   child: Icon(
                     _showUrlField ? Icons.check : Icons.link,
                     color: Colors.white,
@@ -200,8 +218,8 @@ class _ChatPageState extends State<ChatPage> {
                 backgroundColor: chatProv.isLoading ? Colors.grey : Colors.blue,
                 child: IconButton(
                   icon: const Icon(Icons.send, color: Colors.white),
-                  onPressed: chatProv.isLoading 
-                      ? null 
+                  onPressed: chatProv.isLoading
+                      ? null
                       : () => _sendMessage(chatProv, userId),
                 ),
               ),
@@ -218,7 +236,7 @@ class _ChatPageState extends State<ChatPage> {
 
     _textController.clear();
     await chatProv.send(userId, text, chatProv.currentUrl);
-    
+
     // Scroll al final después de enviar
     _scrollToBottom();
   }

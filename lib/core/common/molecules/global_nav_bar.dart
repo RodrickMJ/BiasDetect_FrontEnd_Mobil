@@ -53,6 +53,21 @@ class GlobalNavBar extends StatelessWidget {
                     activeIcon: Icons.chat_bubble,
                     onTap: () => context.go(AppRoutes.chatPath),
                   ),
+                  NavButton(
+                    index: 2,
+                    isActive: currentIndex == 2,
+                    icon: Icons.history_outlined,
+                    activeIcon: Icons.history,
+                    onTap: () => context.go(AppRoutes.historyPath),
+                  ),
+                  NavButton(
+                    index: 3,
+                    isActive: currentIndex == 3,
+                    icon: Icons.bar_chart_outlined,
+                    activeIcon: Icons.bar_chart,
+                    onTap: () => context.go(AppRoutes.performanceUserPath),
+                  ),
+
                 ],
               ),
             ),
