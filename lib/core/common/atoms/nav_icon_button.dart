@@ -7,7 +7,7 @@ class NavButton extends StatelessWidget {
   final IconData activeIcon;
   final VoidCallback onTap;
 
-  const NavButton({
+  const NavButton({super.key, 
     required this.index,
     required this.isActive,
     required this.icon,

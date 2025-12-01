@@ -19,7 +19,7 @@ class ToggleSwitch extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       decoration: BoxDecoration(
-        color: cs.surfaceVariant.withOpacity(0.4),
+        color: cs.surfaceContainerHighest.withOpacity(0.4),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

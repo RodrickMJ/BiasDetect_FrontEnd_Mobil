@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../provider/performance_provider.dart';
 import '../widgets/molecules/metric_card.dart';
 import '../widgets/components/progress_chart.dart';

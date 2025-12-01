@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/chat.dart';
 
 class ChatModel extends ChatMessage {
@@ -13,7 +12,11 @@ class ChatModel extends ChatMessage {
       sender: map['sender'] ?? "",
       text: map['text'] ?? "",
       timestamp: map['timestamp'] != null
-          ? (map['timestamp'] as Timestamp).toDate()
+          ? (map['timestamp'] is String
+              ? DateTime.parse(map['timestamp'])
+              : map['timestamp'] is DateTime
+                  ? map['timestamp']
+                  : null)
           : null,
     );
   }
