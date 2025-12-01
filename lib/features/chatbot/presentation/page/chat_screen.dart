@@ -41,55 +41,85 @@ class _ChatPageState extends State<ChatPage> {
     final loginProv = Provider.of<LoginProvider>(context);
     final userId = loginProv.user?.id ?? "";
 
+    final cs = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final brightness = Theme.of(context).brightness;
+
+    // Botón de enviar: azul fijo en Light Mode
+    final sendButtonColor = brightness == Brightness.light
+        ? const Color(0xFF2563EB)
+        : cs.primary;
+
+    final sendIconColor = brightness == Brightness.light
+        ? Colors.white
+        : cs.onPrimary;
+
     return SafeArea(
       child: Column(
         children: [
-          // Header
+          // HEADER --------------------------------------------------------------------------
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                bottom: BorderSide(color: Colors.grey.shade300),
-              ),
+              color: cs.surface,
+              border: Border(bottom: BorderSide(color: cs.outlineVariant)),
             ),
-            child: const Center(
-              child: Text(
-                "Chat Bot",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+            child: Row(
+              children: [
+                Builder(
+                  builder: (context) {
+                    return IconButton(
+                      icon: Icon(Icons.menu, color: cs.onSurface),
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                    );
+                  },
                 ),
-              ),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      "Chat Bot",
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: cs.onSurface,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 48),
+              ],
             ),
           ),
 
-          // Contenido principal
+          // BODY ---------------------------------------------------------------------------
           Expanded(
             child: chatProv.messages.isEmpty
-                ? _buildEmptyState()
+                ? _buildEmptyState(context)
                 : ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.all(16),
-                    itemCount: chatProv.messages.length + (chatProv.isLoading ? 1 : 0),
+                    itemCount:
+                        chatProv.messages.length + (chatProv.isLoading ? 1 : 0),
                     itemBuilder: (_, i) {
-                      // Indicador de carga al final
                       if (i == chatProv.messages.length) {
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Row(
                             children: [
                               const SizedBox(width: 16),
-                              const SizedBox(
+                              SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: cs.primary,
+                                ),
                               ),
                               const SizedBox(width: 12),
                               Text(
                                 "Analizando...",
-                                style: TextStyle(color: Colors.grey[600]),
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                ),
                               ),
                             ],
                           ),
@@ -98,64 +128,84 @@ class _ChatPageState extends State<ChatPage> {
 
                       final msg = chatProv.messages[i];
                       final isUser = msg.sender == "user";
-                      
-                      return MessageBubble(
-                        message: msg,
-                        isUser: isUser,
-                      );
+
+                      return MessageBubble(message: msg, isUser: isUser);
                     },
                   ),
           ),
 
-          // Input
-          _buildInputArea(chatProv, userId),
+          // INPUT --------------------------------------------------------------------------
+          _buildInputArea(
+            context,
+            chatProv,
+            userId,
+            sendButtonColor,
+            sendIconColor,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             "Hello User",
-            style: Theme.of(context)
-                .textTheme
-                .headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: cs.onSurface,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             "Where do we start?",
-            style: TextStyle(color: Colors.grey[600]),
+            style: textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInputArea(ChatProvider chatProv, String userId) {
+  Widget _buildInputArea(
+    BuildContext context,
+    ChatProvider chatProv,
+    String userId,
+    Color sendButtonColor,
+    Color sendIconColor,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade300)),
+        color: cs.surface,
+        border: Border(top: BorderSide(color: cs.outlineVariant)),
       ),
       child: Column(
         children: [
           if (_showUrlField)
             TextField(
               controller: TextEditingController(text: chatProv.currentUrl),
+              style: TextStyle(color: cs.onSurface),
               decoration: InputDecoration(
                 hintText: "https://example.com/noticia",
-                prefixIcon: const Icon(Icons.link, size: 20),
+                hintStyle: TextStyle(color: cs.onSurfaceVariant),
+                prefixIcon: Icon(Icons.link, size: 20, color: cs.primary),
+                filled: true,
+                fillColor: cs.surfaceContainerHighest,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
               onChanged: chatProv.updateUrl,
             ),
@@ -168,40 +218,51 @@ class _ChatPageState extends State<ChatPage> {
                 onTap: () => setState(() => _showUrlField = !_showUrlField),
                 child: CircleAvatar(
                   radius: 18,
-                  backgroundColor:
-                      _showUrlField ? Colors.blue : Colors.grey.shade300,
+                  backgroundColor: cs.brightness == Brightness.light
+                            ? const Color(0xFF2563EB) // Fondo azul en light
+                            : cs.primary,
                   child: Icon(
                     _showUrlField ? Icons.check : Icons.link,
-                    color: Colors.white,
+                    color: sendIconColor,            
                     size: 18,
                   ),
                 ),
               ),
+
               const SizedBox(width: 12),
 
               Expanded(
                 child: TextField(
                   controller: _textController,
+                  style: TextStyle(color: cs.onSurface),
                   decoration: InputDecoration(
                     hintText: "Message Chat",
+                    hintStyle: TextStyle(color: cs.onSurfaceVariant),
+                    filled: true,
+                    fillColor: cs.surfaceContainerHighest,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                   ),
                   onSubmitted: (_) => _sendMessage(chatProv, userId),
                 ),
               ),
+
               const SizedBox(width: 8),
 
               CircleAvatar(
                 radius: 22,
-                backgroundColor: chatProv.isLoading ? Colors.grey : Colors.blue,
+                backgroundColor: chatProv.isLoading
+                    ? cs.surfaceVariant
+                    : sendButtonColor,
                 child: IconButton(
-                  icon: const Icon(Icons.send, color: Colors.white),
-                  onPressed: chatProv.isLoading 
-                      ? null 
+                  icon: Icon(Icons.send, color: sendIconColor),
+                  onPressed: chatProv.isLoading
+                      ? null
                       : () => _sendMessage(chatProv, userId),
                 ),
               ),
@@ -218,8 +279,7 @@ class _ChatPageState extends State<ChatPage> {
 
     _textController.clear();
     await chatProv.send(userId, text, chatProv.currentUrl);
-    
-    // Scroll al final después de enviar
+
     _scrollToBottom();
   }
 }

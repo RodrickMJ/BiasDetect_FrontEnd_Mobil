@@ -1,10 +1,5 @@
-import 'package:bias_detect/features/auth/presentation/provider/login_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:bias_detect/core/router/app_routes.dart';
-import 'package:provider/provider.dart';
-
 import '../provider/performance_provider.dart';
 import '../widgets/molecules/metric_card.dart';
 import '../widgets/molecules/toggle_switch.dart';
@@ -26,22 +21,16 @@ class PerformanceGeneralPage extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// ✅ TOP BAR (no AppBar para no romper el nav global)
+            /// ✅ TOP BAR (Simula un AppBar)
             Container(
               color: cs.surface,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_back_ios, color: cs.onSurface),
-                    onPressed: () async {
-                      final auth = context.read<LoginProvider>();
-
-                      await auth.logout();
-
-                      if (context.mounted) {
-                        context.go(AppRoutes.loginPath);
-                      }
+                    icon: Icon(Icons.menu, color: cs.onSurface),
+                    onPressed: () {
+                      Scaffold.of(context).openDrawer();
                     },
                   ),
 

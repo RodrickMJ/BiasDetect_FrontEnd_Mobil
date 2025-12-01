@@ -11,4 +11,12 @@ class AppRoutes {
 
   static const String chat = "chat";
   static const String chatPath = "/chat";
+
+  static const String history = "history";
+  static const String historyPath = "/history";
+
+  static const String performanceUser = "performanceUser";
+  static const String performanceUserPath = "/performanceUser";
+
+
 }
