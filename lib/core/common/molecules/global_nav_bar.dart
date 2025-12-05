@@ -1,3 +1,4 @@
+// lib/core/common/molecules/global_nav_bar.dart
 import 'dart:ui';
 import 'package:bias_detect/core/common/atoms/nav_icon_button.dart';
 import 'package:flutter/material.dart';
@@ -6,8 +7,13 @@ import 'package:bias_detect/core/router/app_routes.dart';
 
 class GlobalNavBar extends StatelessWidget {
   final int currentIndex;
+  final bool isUserDrawerOpen;
 
-  const GlobalNavBar({super.key, required this.currentIndex});
+  const GlobalNavBar({
+    super.key,
+    required this.currentIndex,
+    this.isUserDrawerOpen = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +73,14 @@ class GlobalNavBar extends StatelessWidget {
                     activeIcon: Icons.bar_chart,
                     onTap: () => context.go(AppRoutes.performanceUserPath),
                   ),
-
+                  // Botón de usuario → abre drawer (no navega)
+                  NavButton(
+                    index: 4,
+                    isActive: isUserDrawerOpen, // Se activa solo cuando el drawer está abierto
+                    icon: Icons.person_outline,
+                    activeIcon: Icons.person,
+                    onTap: () => Scaffold.of(context).openEndDrawer(),
+                  ),
                 ],
               ),
             ),

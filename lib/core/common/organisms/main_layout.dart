@@ -1,12 +1,12 @@
-import 'package:bias_detect/core/common/molecules/global_nav_bar.dart';
+// lib/core/common/organisms/main_layout.dart
 import 'package:bias_detect/core/common/molecules/custom_drawer.dart';
+import 'package:bias_detect/core/common/molecules/global_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bias_detect/core/router/app_routes.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget child;
-
   const MainLayout({super.key, required this.child});
 
   @override
@@ -15,6 +15,7 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   int currentIndex = 0;
+  bool isUserDrawerOpen = false;
 
   @override
   void didChangeDependencies() {
@@ -22,28 +23,30 @@ class _MainLayoutState extends State<MainLayout> {
 
     final location = GoRouterState.of(context).uri.toString();
 
-    if (location == AppRoutes.homePath && currentIndex != 0) {
-      currentIndex = 0;
-    }
-    if (location == AppRoutes.chatPath && currentIndex != 1) {
-      currentIndex = 1;
-    }
-    if (location == AppRoutes.historyPath && currentIndex != 2) {
-      currentIndex = 2;
-    }
-    if (location == AppRoutes.performanceUserPath && currentIndex != 3) {
-      currentIndex = 3;
-    }
+    int newIndex = 0;
+    if (location.startsWith(AppRoutes.homePath)) newIndex = 0;
+    else if (location.startsWith(AppRoutes.chatPath)) newIndex = 1;
+    else if (location.startsWith(AppRoutes.historyPath)) newIndex = 2;
+    else if (location.startsWith(AppRoutes.performanceUserPath)) newIndex = 3;
 
+    if (currentIndex != newIndex) {
+      setState(() => currentIndex = newIndex);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,
+      extendBody: true, // Permite que el contenido pase por detrás del nav bar
       body: widget.child,
-      drawer: const CustomDrawer(),
-      bottomNavigationBar: GlobalNavBar(currentIndex: currentIndex),
+      endDrawer: const CustomDrawer(),
+      onEndDrawerChanged: (isOpen) {
+        setState(() => isUserDrawerOpen = isOpen);
+      },
+      bottomNavigationBar: GlobalNavBar(
+        currentIndex: currentIndex,
+        isUserDrawerOpen: isUserDrawerOpen,
+      ),
     );
   }
 }

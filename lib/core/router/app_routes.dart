@@ -18,5 +18,6 @@ class AppRoutes {
   static const String performanceUser = "performanceUser";
   static const String performanceUserPath = "/performanceUser";
 
-
+  static const String userDetails = "user";
+  static const String userDetailsPath = "/user";
 }

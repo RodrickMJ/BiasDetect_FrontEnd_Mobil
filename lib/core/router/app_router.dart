@@ -1,3 +1,4 @@
+import 'package:bias_detect/core/common/molecules/custom_drawer.dart';
 import 'package:bias_detect/core/common/organisms/main_layout.dart';
 import 'package:bias_detect/core/router/app_routes.dart';
 import 'package:bias_detect/features/auth/presentation/pages/login_screen.dart';
@@ -56,7 +57,10 @@ class AppRouter {
             path: AppRoutes.performanceUserPath,
             builder: (_, __) => const PerformanceUserPage(),
           ),
-
+          GoRoute(
+            path: AppRoutes.userDetailsPath,
+            builder: (_, __) => const CustomDrawer(),
+          )
         ],
       ),
     ],

@@ -6,6 +6,7 @@ import 'package:bias_detect/features/auth/domain/usecase/register_usecase.dart';
 import 'package:bias_detect/features/auth/presentation/provider/login_provider.dart';
 import 'package:bias_detect/features/auth/presentation/provider/register_provider.dart';
 import 'package:bias_detect/features/chatbot/data/datasource/service_chat.dart';
+import 'package:bias_detect/features/chatbot/data/datasource/local_storage_service.dart'; // 👈 AGREGAR
 import 'package:bias_detect/features/chatbot/data/repository/chat_repository_impl.dart';
 import 'package:bias_detect/features/chatbot/domain/repository/chat_respository.dart';
 import 'package:bias_detect/features/chatbot/domain/usecase/chat_usecase.dart';
@@ -16,7 +17,13 @@ import 'package:http/http.dart' as http;
 final getIt = GetIt.instance;
 
 Future<void> configureDependecies() async {
+  // HTTP Client
   getIt.registerLazySingleton<http.Client>(() => http.Client());
+
+  // 👇 AGREGAR: Local Storage (debe inicializarse primero)
+  final localStorage = LocalStorageService();
+  await localStorage.init();
+  getIt.registerSingleton<LocalStorageService>(localStorage);
 
   // Auth
   getIt.registerLazySingleton<ServiceAuth>(
@@ -38,7 +45,6 @@ Future<void> configureDependecies() async {
     () => RegisterProvider(registerUsecase: getIt()),
   );
 
-
   // Chatbot
   getIt.registerLazySingleton<ChatService>(
     () => ChatServiceImpl(getIt<http.Client>()),
@@ -52,7 +58,11 @@ Future<void> configureDependecies() async {
     () => ChatUsecase(getIt<ChatRepository>()),
   );
 
+  // 👇 MODIFICAR: ChatProvider ahora incluye localStorage
   getIt.registerLazySingleton<ChatProvider>(
-    () => ChatProvider(usecase: getIt()),
+    () => ChatProvider(
+      usecase: getIt<ChatUsecase>(),
+      localStorage: getIt<LocalStorageService>(), // 👈 AGREGAR
+    ),
   );
 }

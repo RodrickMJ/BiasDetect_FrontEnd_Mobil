@@ -29,12 +29,12 @@ class PerformanceUserPage extends ConsumerWidget {
               child: Row(
                 children: [
 
-                  IconButton(
-                    icon: Icon(Icons.menu, color: cs.onSurface),
-                    onPressed: () {
-                      Scaffold.of(context).openDrawer();
-                    },
-                  ),
+                  // IconButton(
+                  //   icon: Icon(Icons.menu, color: cs.onSurface),
+                  //   onPressed: () {
+                  //     Scaffold.of(context).openDrawer();
+                  //   },
+                  // ),
 
                   const Expanded(
                     child: Text(

@@ -2,10 +2,11 @@ import 'package:bias_detect/core/di/injections.dart';
 import 'package:bias_detect/features/auth/presentation/provider/login_provider.dart';
 import 'package:bias_detect/features/auth/presentation/provider/register_provider.dart';
 import 'package:bias_detect/features/chatbot/presentation/provider/chat_provider.dart';
+import 'package:bias_detect/features/chatbot/data/datasource/local_storage_service.dart';
 import 'package:bias_detect/myapp.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider; // 👈 ALIAS EN PROVIDER
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,11 +14,17 @@ void main() async {
   await configureDependecies();
 
   runApp(
-    MultiProvider(
+    provider.MultiProvider(
+      // 👈 USAR CON ALIAS
       providers: [
-        ChangeNotifierProvider(create: (_) => getIt<LoginProvider>()),
-        ChangeNotifierProvider(create: (_) => getIt<RegisterProvider>()),
-        ChangeNotifierProvider(create: (_) => getIt<ChatProvider>()),
+        provider.Provider<LocalStorageService>.value(
+          value: getIt<LocalStorageService>(),
+        ),
+        provider.ChangeNotifierProvider(create: (_) => getIt<LoginProvider>()),
+        provider.ChangeNotifierProvider(
+          create: (_) => getIt<RegisterProvider>(),
+        ),
+        provider.ChangeNotifierProvider(create: (_) => getIt<ChatProvider>()),
       ],
       child: const ProviderScope(child: Myapp()),
     ),

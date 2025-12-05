@@ -1,3 +1,4 @@
+// lib/core/common/atoms/nav_icon_button.dart
 import 'package:flutter/material.dart';
 
 class NavButton extends StatelessWidget {
@@ -7,7 +8,8 @@ class NavButton extends StatelessWidget {
   final IconData activeIcon;
   final VoidCallback onTap;
 
-  const NavButton({super.key, 
+  const NavButton({
+    super.key,
     required this.index,
     required this.isActive,
     required this.icon,
@@ -25,9 +27,7 @@ class NavButton extends StatelessWidget {
         duration: const Duration(milliseconds: 220),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: isActive
-              ? cs.primary.withOpacity(0.18)
-              : Colors.transparent,
+          color: isActive ? cs.primary.withOpacity(0.18) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Icon(
@@ -39,4 +39,3 @@ class NavButton extends StatelessWidget {
     );
   }
 }
-

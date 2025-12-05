@@ -7,7 +7,7 @@ abstract class ServiceAuth {
   Future<UserModel> register(String name, String email, String password);
 }
 
-final baseUrl = "https://z1bn8fjr-3000.usw3.devtunnels.ms/auth";
+final baseUrl = "https://microservices-gamma.vercel.app/auth";
 
 class ServiceAuthImpl implements ServiceAuth {
   final http.Client client;
