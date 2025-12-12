@@ -1,28 +1,100 @@
 import 'dart:convert';
 import 'package:bias_detect/features/chatbot/data/models/analytics_model.dart';
+import 'package:bias_detect/features/home/data/service.dart';
 import 'package:flutter/material.dart';
 import '../../domain/entities/chat.dart';
 import '../../domain/usecase/chat_usecase.dart';
 import '../../data/datasource/local_storage_service.dart';
+import '../../data/datasource/fcm_token_service.dart';
+import '../../data/datasource/fcm_notification_handler.dart';
 
 class ChatProvider with ChangeNotifier {
   final ChatUsecase usecase;
-  final LocalStorageService localStorage; // 👈 AGREGAR
+  final LocalStorageService localStorage;
+  final FcmTokenService fcmTokenService;
+  late FcmNotificationHandler _notificationHandler;
 
   List<ChatMessage> messages = [];
   bool isLoading = false;
   String _currentUrl = "";
   String _loadingMessage = "Procesando...";
-  String? _currentConversationId;
+  String? _pendingAnalysisId;
+  bool _waitingForPushResult = false;
+  String? _pendingFirstMessage;
+  String? _pendingUrl;
 
   ChatProvider({
     required this.usecase,
-    required this.localStorage, // 👈 AGREGAR
-  });
+    required this.localStorage,
+    required this.fcmTokenService,
+  }) {
+    _initializeNotificationHandler();
+  }
 
   String get currentUrl => _currentUrl;
   String get loadingMessage => _loadingMessage;
-  String? get currentConversationId => _currentConversationId;
+  bool get waitingForPushResult => _waitingForPushResult;
+
+  void _initializeNotificationHandler() {
+    _notificationHandler = FcmNotificationHandler(
+      onAnalysisId: _handleAnalysisIdFromPush,
+    );
+    _notificationHandler.initialize();
+  }
+
+  void _handleAnalysisIdFromPush(String analysisId) async {
+    if (analysisId == 'ERROR') {
+      if (_waitingForPushResult) {
+        if (messages.isNotEmpty &&
+            messages.last.sender == 'assistant' &&
+            messages.last.text.contains('PROCESANDO')) {
+          messages.removeLast();
+        }
+        _showErrorMessage("El análisis falló en el servidor. Por favor intenta nuevamente.");
+        _resetPendingState();
+        notifyListeners();
+      }
+      return;
+    }
+
+    final idToUse = analysisId.isNotEmpty ? analysisId : _pendingAnalysisId;
+    if (idToUse == null || idToUse.isEmpty) {
+      _showErrorMessage("No se pudo identificar el análisis");
+      return;
+    }
+
+    if (_waitingForPushResult) {
+      try {
+        final result = await usecase.getAnalysisById(idToUse);
+        if (result != null && result['resultado'] != 'ERROR') {
+          if (messages.isNotEmpty &&
+              messages.last.sender == 'assistant' &&
+              messages.last.text.contains('PROCESANDO')) {
+            messages.removeLast();
+          }
+
+          final llmData = result['llm'] as Map<String, dynamic>? ?? result;
+          messages.add(ChatMessage(
+            sender: "assistant",
+            text: jsonEncode(llmData),
+            timestamp: DateTime.now(),
+          ));
+
+          await _saveAnalytics(result);
+          _resetPendingState();
+          notifyListeners();
+        } else {
+          _showErrorMessage("No se pudo obtener el resultado del análisis");
+          _resetPendingState();
+          notifyListeners();
+        }
+      } catch (e) {
+        _showErrorMessage("Error al obtener el resultado");
+        _resetPendingState();
+        notifyListeners();
+      }
+    }
+  }
 
   void updateUrl(String url) {
     _currentUrl = url.trim();
@@ -34,23 +106,11 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Cargar conversación desde el historial
-  Future<void> loadConversation(String conversationId) async {
-    final conversation = localStorage.getConversation(conversationId);
-    if (conversation == null) return;
-
-    _currentConversationId = conversationId;
-    messages = conversation.messages.map((m) => m.toEntity()).toList();
-    _currentUrl = conversation.url ?? "";
-    notifyListeners();
-  }
-
-  // Iniciar nueva conversación
-  void startNewConversation() {
-    _currentConversationId = null;
-    messages.clear();
-    _currentUrl = "";
-    notifyListeners();
+  void _resetPendingState() {
+    _waitingForPushResult = false;
+    _pendingAnalysisId = null;
+    _pendingFirstMessage = null;
+    _pendingUrl = null;
   }
 
   Future<void> send(String userId, String text, String url) async {
@@ -59,61 +119,48 @@ class ChatProvider with ChangeNotifier {
       return;
     }
 
-    if (url.trim().isEmpty) {
-      _showErrorMessage("Por favor ingresa una URL válida");
+    final fcmToken = await fcmTokenService.getToken();
+    if (fcmToken == null || fcmToken.isEmpty) {
+      _showErrorMessage("Error: No se pudo obtener el token de notificaciones");
       return;
     }
 
-    final userMessage = ChatMessage(
+    _pendingFirstMessage = text.trim();
+    _pendingUrl = url.trim().isNotEmpty ? url.trim() : null;
+
+    messages.add(ChatMessage(
       sender: "user",
       text: text.trim(),
       timestamp: DateTime.now(),
-    );
-
-    messages.add(userMessage);
+    ));
     isLoading = true;
     notifyListeners();
 
     try {
-      _updateLoadingMessage("🔍 Obteniendo contenido...");
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      _updateLoadingMessage("🧠 Analizando sesgos...");
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      _updateLoadingMessage("✨ Generando resultado...");
-
-      final result = await usecase.sendMessage(userId, text.trim(), url.trim());
-
-      if (result != null && result['resultado'] != 'ERROR') {
-        final assistantMessage = ChatMessage(
-          sender: "assistant",
-          text: jsonEncode(result),
-          timestamp: DateTime.now(),
+      final isNoticeAnalysis = url.trim().isNotEmpty;
+      if (isNoticeAnalysis) {
+        _updateLoadingMessage("Analizando noticia completa...");
+        final result = await usecase.sendNoticeAnalysis(
+          url: url.trim(),
+          fcmToken: fcmToken,
+          textUser: text.trim(),
         );
-        messages.add(assistantMessage);
-
-        // 👇 GUARDAR ANALYTICS
-        await _saveAnalytics(result);
-
-        await _saveConversation(text, url);
+        await _processAnalysisResult(result, text.trim(), url.trim());
       } else {
-        final errorMessage = ChatMessage(
-          sender: "assistant",
-          text: result?['explicacion'] ?? "❌ Error al procesar tu solicitud",
-          timestamp: DateTime.now(),
+        _updateLoadingMessage("Analizando comentario...");
+        final result = await usecase.sendCommentAnalysis(
+          fcmToken: fcmToken,
+          textUser: text.trim(),
         );
-        messages.add(errorMessage);
+        await _processAnalysisResult(result, text.trim(), null);
       }
     } catch (e) {
-      print("Error enviando mensaje: $e");
-
-      final errorMessage = ChatMessage(
+      messages.add(ChatMessage(
         sender: "assistant",
-        text: "❌ Error de conexión. Verifica tu internet e intenta nuevamente.",
+        text: "Error de conexión. Verifica tu internet e intenta nuevamente.",
         timestamp: DateTime.now(),
-      );
-      messages.add(errorMessage);
+      ));
+      notifyListeners();
     }
 
     isLoading = false;
@@ -121,55 +168,57 @@ class ChatProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _saveAnalytics(Map<String, dynamic> result) async {
-  try {
-    final analytics = AnalyticsModel.fromMLResponse(result);
-    await localStorage.saveAnalytics(analytics);
-    notifyListeners(); // 👈 Esto actualizará la UI
-  } catch (e) {
-    print("Error guardando analytics: $e");
-  }
-}
-
-  Future<void> _saveConversation(String firstMessage, String url) async {
-    try {
-      if (_currentConversationId == null) {
-        // Nueva conversación
-        final title = firstMessage.length <= 50
-            ? firstMessage
-            : '${firstMessage.substring(0, 50)}...';
-
-        _currentConversationId = await localStorage.saveConversation(
-          title: title,
-          messages: messages,
-          url: url,
-        );
-      } else {
-        // Actualizar conversación existente
-        await localStorage.updateConversation(
-          id: _currentConversationId!,
-          messages: messages,
-          url: url,
-        );
+  Future<void> _processAnalysisResult(
+    Map<String, dynamic>? result,
+    String text,
+    String? url,
+  ) async {
+    if (result != null && result['resultado'] != 'ERROR') {
+      if (result['resultado'] == 'PROCESANDO') {
+        _waitingForPushResult = true;
+        _pendingAnalysisId = result['id'];
       }
+
+      messages.add(ChatMessage(
+        sender: "assistant",
+        text: jsonEncode(result),
+        timestamp: DateTime.now(),
+      ));
+
+      if (result['resultado'] != 'PROCESANDO') {
+        await _saveAnalytics(result);
+      }
+    } else {
+      messages.add(ChatMessage(
+        sender: "assistant",
+        text: result?['explicacion'] ?? "Error al procesar tu solicitud",
+        timestamp: DateTime.now(),
+      ));
+    }
+  }
+
+  Future<void> _saveAnalytics(Map<String, dynamic> result) async {
+    try {
+      final analytics = AnalyticsModel.fromMLResponse(result);
+      await localStorage.saveAnalytics(analytics);
     } catch (e) {
-      print("Error guardando conversación: $e");
+      // Silenciado
     }
   }
 
   void _showErrorMessage(String message) {
-    final errorMessage = ChatMessage(
+    messages.add(ChatMessage(
       sender: "assistant",
-      text: "⚠️ $message",
+      text: "$message",
       timestamp: DateTime.now(),
-    );
-    messages.add(errorMessage);
+    ));
     notifyListeners();
   }
 
-  void clearMessages() {
+  void clearCurrentChat() {
     messages.clear();
-    _currentConversationId = null;
+    _currentUrl = "";
+    _resetPendingState();
     notifyListeners();
   }
 }

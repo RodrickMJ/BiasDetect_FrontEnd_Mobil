@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:bias_detect/core/router/app_routes.dart';
+import 'package:bias_detect/core/theme/theme_provider.dart';
+import 'package:bias_detect/features/auth/presentation/provider/login_provider.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -8,133 +11,99 @@ class CustomDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final user = context.read<LoginProvider>().user;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Drawer(
-
       width: MediaQuery.of(context).size.width * 0.75,
       child: ListView(
         padding: EdgeInsets.zero,
-        children: <Widget>[
-
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 40.0, left: 16.0),
-              child: TextButton.icon(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back_ios, size: 16),
-                label: const Text('Back'),
-              ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 50, left: 16),
+            child: TextButton.icon(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_ios, size: 18),
+              label: const Text('Back'),
             ),
           ),
-
+          const SizedBox(height: 30),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
                 CircleAvatar(
-                  radius: 30,
-                  backgroundColor: colorScheme.onSurface.withOpacity(0.1),
-                  child: Icon(Icons.person, size: 30, color: colorScheme.onSurface.withOpacity(0.5)),
+                  radius: 42,
+                  backgroundColor: colorScheme.primary.withOpacity(0.15),
+                  child: Icon(Icons.person, size: 50, color: colorScheme.primary),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 16),
                 Text(
-                  'User Name',
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  user?.name ?? 'Usuario',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
+                const SizedBox(height: 4),
                 Text(
-                  'Email: Roi',
+                  user?.email ?? 'email@ejemplo.com',
                   style: TextStyle(
-                    color: colorScheme.onSurface.withOpacity(0.7),
                     fontSize: 14,
+                    color: colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
               ],
             ),
           ),
-          // Botones de navegación
-          _DrawerItem(
-            title: 'Input button',
-            icon: Icons.input,
-            onTap: () {},
-          ),
-          _DrawerItem(
-            title: 'Input button',
-            icon: Icons.input,
-            onTap: () {},
-          ),
-          _DrawerItem(
-            title: 'Input button',
-            icon: Icons.input,
-            onTap: () {},
-          ),
-          const Divider(),
-          _DrawerItem(
-            title: 'About us',
-            icon: Icons.info_outline,
-            onTap: () {},
-          ),
-          _DrawerItem(
-            title: 'Settings',
-            icon: Icons.settings,
-            onTap: () {
-
-              Navigator.pop(context);
+          const SizedBox(height: 60),
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(isDark ? Icons.dark_mode : Icons.light_mode),
+                        const SizedBox(width: 12),
+                        Text(isDark ? 'Modo Oscuro' : 'Modo Claro'),
+                      ],
+                    ),
+                    Switch(
+                      value: isDark,
+                      onChanged: (_) => themeProvider.toggleTheme(),
+                    ),
+                  ],
+                ),
+              );
             },
           ),
-          _DrawerItem(
-            title: 'Help and Support',
-            icon: Icons.help_outline,
-            onTap: () {},
-          ),
-          const Divider(),
-
-          _DrawerItem(
-            title: 'Logout',
-            icon: Icons.logout,
-            color: colorScheme.error,
-            onTap: () {
-
-              context.go(AppRoutes.loginPath);
-            },
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 30),
+            child: ListTile(
+              leading: Icon(Icons.logout, color: colorScheme.error),
+              title: Text(
+                'Cerrar sesión',
+                style: TextStyle(color: colorScheme.error),
+              ),
+              onTap: () => _handleLogout(context),
+            ),
           ),
         ],
       ),
     );
   }
-}
 
-class _DrawerItem extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final VoidCallback onTap;
-  final Color? color;
-
-  const _DrawerItem({
-    required this.title,
-    required this.icon,
-    required this.onTap,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final itemColor = color ?? Theme.of(context).colorScheme.onSurface;
-
-    return ListTile(
-      leading: Icon(icon, color: itemColor),
-      title: Text(
-        title,
-        style: TextStyle(color: itemColor),
-      ),
-      onTap: onTap,
-    );
+  void _handleLogout(BuildContext context) {
+    Navigator.of(context).pop();
+    context.read<LoginProvider>().logout().then((_) {
+      if (context.mounted) {
+        context.go(AppRoutes.loginPath);
+      }
+    }).catchError((_) {
+      if (context.mounted) {
+        context.go(AppRoutes.loginPath);
+      }
+    });
   }
 }

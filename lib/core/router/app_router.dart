@@ -1,4 +1,3 @@
-import 'package:bias_detect/core/common/molecules/custom_drawer.dart';
 import 'package:bias_detect/core/common/organisms/main_layout.dart';
 import 'package:bias_detect/core/router/app_routes.dart';
 import 'package:bias_detect/features/auth/presentation/pages/login_screen.dart';
@@ -6,25 +5,38 @@ import 'package:bias_detect/features/auth/presentation/pages/register_screen.dar
 import 'package:bias_detect/features/auth/presentation/provider/login_provider.dart';
 import 'package:bias_detect/features/chatbot/presentation/page/chat_screen.dart';
 import 'package:bias_detect/features/chatbot/presentation/page/history_screen.dart';
-
 import 'package:bias_detect/features/home/presentation/pages/performance_general_page.dart';
 import 'package:bias_detect/features/home/presentation/pages/performance_user_page.dart';
-
 import 'package:go_router/go_router.dart';
 
 class AppRouter {
   final LoginProvider loginProvider;
+
   AppRouter(this.loginProvider);
 
   late final GoRouter router = GoRouter(
-    // 🔥 Arranca directamente en Home
-    initialLocation: AppRoutes.homePath,
-
-    // 🔥 Ya no se usa para redirecciones de login
+    initialLocation: AppRoutes.loginPath,
     refreshListenable: loginProvider,
-
-    // 🔥 No hay redirecciones: el usuario puede entrar a cualquier ruta
+    
     redirect: (context, state) {
+      if (!loginProvider.isInitialized) {
+        return null;
+      }
+
+      final isLoggedIn = loginProvider.isLogged;
+      final currentPath = state.uri.toString();
+
+      final isPublicRoute = currentPath == AppRoutes.loginPath || 
+                           currentPath == AppRoutes.registerPath;
+
+      if (!isLoggedIn && !isPublicRoute) {
+        return AppRoutes.loginPath;
+      }
+
+      if (isLoggedIn && currentPath == AppRoutes.loginPath) {
+        return AppRoutes.homePath;
+      }
+
       return null;
     },
 
@@ -57,10 +69,6 @@ class AppRouter {
             path: AppRoutes.performanceUserPath,
             builder: (_, __) => const PerformanceUserPage(),
           ),
-          GoRoute(
-            path: AppRoutes.userDetailsPath,
-            builder: (_, __) => const CustomDrawer(),
-          )
         ],
       ),
     ],

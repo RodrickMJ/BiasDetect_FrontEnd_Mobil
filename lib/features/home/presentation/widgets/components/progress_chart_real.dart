@@ -1,5 +1,5 @@
+import 'package:bias_detect/features/home/data/service.dart';
 import 'package:flutter/material.dart';
-import '../../../../chatbot/data/datasource/local_storage_service.dart';
 
 class ProgressChartReal extends StatelessWidget {
   final LocalStorageService localStorage;

@@ -1,11 +1,12 @@
+import 'package:bias_detect/features/home/data/service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../chatbot/data/datasource/local_storage_service.dart';
 import '../widgets/components/bias_distribution_chart.dart';
 import '../widgets/components/sentiment_analysis_card.dart';
 import '../widgets/components/recent_analyses_list.dart';
 import '../widgets/components/top_biases_card.dart';
 import '../widgets/components/monthly_trends_chart.dart';
+import '../widgets/components/detailed_analysis_view.dart'; // 🔥 NUEVO
 
 class PerformanceDetailedPage extends StatelessWidget {
   const PerformanceDetailedPage({super.key});
@@ -20,6 +21,11 @@ class PerformanceDetailedPage extends StatelessWidget {
         const SizedBox(height: 16),
         TopBiasesCard(localStorage: localStorage),
         const SizedBox(height: 16),
+        
+        // 🔥 NUEVO: Vista con datos del análisis completo
+        DetailedAnalysisView(localStorage: localStorage),
+        const SizedBox(height: 16),
+        
         SentimentAnalysisCard(localStorage: localStorage),
         const SizedBox(height: 16),
         MonthlyTrendsChart(localStorage: localStorage),

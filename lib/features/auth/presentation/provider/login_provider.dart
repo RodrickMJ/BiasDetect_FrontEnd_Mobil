@@ -14,10 +14,12 @@ class LoginProvider with ChangeNotifier {
   User? _user;
   bool isLoading = false;
   String? _authError;
+  bool _isInitialized = false; // NUEVO: Para saber si ya cargó la sesión
 
   User? get user => _user;
   String? get authError => _authError;
   bool get isLogged => _user != null;
+  bool get isInitialized => _isInitialized; // NUEVO
 
   String email = "";
   String password = "";
@@ -25,7 +27,6 @@ class LoginProvider with ChangeNotifier {
   String? passwordError;
 
   // Cargar sesión guardada al iniciar la app
-
   Future<void> _loadSession() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -41,8 +42,10 @@ class LoginProvider with ChangeNotifier {
         email: email ?? "",
         token: token,
       );
-      notifyListeners();
     }
+    
+    _isInitialized = true; // NUEVO: Marcamos como inicializado
+    notifyListeners();
   }
 
   // Guardar sesión
@@ -69,7 +72,6 @@ class LoginProvider with ChangeNotifier {
       _authError = null;
 
       await _saveSession(u);
-
     } catch (e) {
       _authError = "Credenciales incorrectas";
     } finally {
@@ -78,12 +80,33 @@ class LoginProvider with ChangeNotifier {
     }
   }
 
-  // Logout
+  // Logout CORREGIDO - Limpia TODO
   Future<void> logout() async {
-    _user = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    notifyListeners();
+    try {
+      // Limpiar el usuario primero
+      _user = null;
+      
+      // Limpiar SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear(); // O usa remove para claves específicas
+      
+      // También puedes limpiar los campos de email y password si quieres
+      email = "";
+      password = "";
+      emailError = null;
+      passwordError = null;
+      _authError = null;
+      
+      // Notificar a los listeners
+      notifyListeners();
+      
+      debugPrint("✅ Logout exitoso - Usuario: null, SharedPreferences limpiado");
+    } catch (e) {
+      debugPrint("❌ Error en logout: $e");
+      // Aún así, intenta limpiar el usuario
+      _user = null;
+      notifyListeners();
+    }
   }
 
   // Validaciones

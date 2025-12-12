@@ -7,7 +7,31 @@ class ChatRepositoryImpl implements ChatRepository {
   ChatRepositoryImpl(this.service);
 
   @override
-  Future<Map<String, dynamic>?> sendMessage(String userId, String text, String url) {
-    return service.sendMessage(userId, text, url);
+  Future<Map<String, dynamic>?> sendNoticeAnalysis({
+    required String url,
+    required String fcmToken,
+    required String textUser,
+  }) {
+    return service.sendNoticeAnalysis(
+      url: url,
+      fcmToken: fcmToken,
+      textUser: textUser,
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>?> sendCommentAnalysis({
+    required String fcmToken,
+    required String textUser,
+  }) {
+    return service.sendCommentAnalysis(
+      fcmToken: fcmToken,
+      textUser: textUser,
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getAnalysisById(String analysisId) {
+    return service.getAnalysisById(analysisId);
   }
 }

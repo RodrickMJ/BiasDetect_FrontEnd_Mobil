@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "1069850173715",
-    "project_id": "waos-f390f",
-    "storage_bucket": "waos-f390f.firebasestorage.app"
+    "project_number": "1030652401330",
+    "project_id": "bias-detect",
+    "storage_bucket": "bias-detect.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1069850173715:android:55c6435e6a31c7c31c3ae6",
+        "mobilesdk_app_id": "1:1030652401330:android:a4401617449a73ac825bab",
         "android_client_info": {
           "package_name": "com.example.bias_detect"
         }
@@ -15,26 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCJmndm3yl3j-kJxaXGnN75Zc3Ppqd_L7A"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:1069850173715:android:e815756dd2b29fc41c3ae6",
-        "android_client_info": {
-          "package_name": "com.example.firebase_notification"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCJmndm3yl3j-kJxaXGnN75Zc3Ppqd_L7A"
+          "current_key": "AIzaSyA3zbhGs-_ORe6Yhc4cZvbx8JAFGmdxzQM"
         }
       ],
       "services": {
@@ -43,6 +24,6 @@
         }
       }
     }
-  ],  
+  ],
   "configuration_version": "1"
 }
